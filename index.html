@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Добро 11 — Волонтёры Коми</title>
+
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogItCU0L7QsdGA0L4gMTEgLSDQktC+0LvQvtC90YLRkdGA0Ysg0JrQvtC80LgiLAogICJzaG9ydF9uYW1lIjogItCU0L7QsdGA0L4gMTEiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJ0aGVtZV9jb2xvciI6ICIjMjdBRTYwIiwKICAiaWNvbnMiOiBbCiAgICB7ICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgNTEyIDUxMic+PHJlY3Qgd2lkdGg9JzUxMicgaGVpZ2h0PSc1MTInIHJ4PSc4MCcgZmlsbD0nIzI3QUU2MCcvPjx0ZXh0IHg9JzI1NicgeT0nMzUwJyBmb250LXNpemU9JzI4MCcgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnPvCdpI08L3RleHQ+PC9zdmc+IiwgInNpemVzIjogIjUxMng1MTIiLCAidHlwZSI6ICJpbWFnZS9zdmcreG1sIiB9CiAgXQp9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#27AE60">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css">
+    
+    <style>
+        :root {
+            --primary: #27AE60;
+            --primary-dark: #1E8449;
+            --primary-light: #D5F5E3;
+            --secondary: #2980B9;
+            --danger: #E74C3C;
+            --danger-light: #FADBD8;
+            --warning: #F1C40F;
+            --warning-light: #FDEBD0;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --bg-light: #F0F4F8;
+            --radius-card: 14px;
+            --radius-button: 10px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: #fff;
+            min-height: 100vh;
+            box-shadow: 0 0 40px rgba(0,0,0,0.06);
+            position: relative;
+            padding-bottom: 80px;
+        }
+        
+        /* ===== ШАПКА ===== */
+        .header {
+            background: rgba(255,255,255,0.95);
+            padding: 12px 16px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(10px);
+            gap: 12px;
+        }
+        .logo {
+            font-weight: 700; font-size: 1.1rem; color: var(--primary);
+            display: flex; align-items: center; gap: 6px;
+            cursor: pointer; background: none; border: none;
+            flex-shrink: 0;
+        }
+        .logo .sub { font-size: 0.5rem; color: var(--text-light); font-weight: 400; display: block; }
+        .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .header-actions .btn-icon {
+            background: none; border: none; font-size: 1.1rem; color: var(--text-dark);
+            padding: 6px 8px; border-radius: 50%; cursor: pointer;
+        }
+        .header-actions .btn-sm { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; }
+        
+        /* Десктопная навигация по умолчанию скрыта */
+        .desktop-nav { display: none; }
+        
+        /* ===== НИЖНИЙ ТАБ-БАР (только мобильные) ===== */
+        .tab-bar {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            max-width: 480px; width: 100%;
+            background: rgba(255,255,255,0.95);
+            border-top: 1px solid #eee;
+            display: flex; justify-content: space-around;
+            padding: 6px 0 12px; z-index: 999;
+            backdrop-filter: blur(10px);
+        }
+        .tab-item {
+            display: flex; flex-direction: column; align-items: center; gap: 1px;
+            background: none; border: none; font-size: 0.5rem; color: var(--text-light);
+            padding: 4px 8px; cursor: pointer; min-width: 44px;
+        }
+        .tab-item i { font-size: 1.3rem; }
+        .tab-item.active { color: var(--primary); }
+        .tab-item.create-tab i {
+            background: var(--primary); color: white; border-radius: 50%;
+            padding: 8px; font-size: 1.1rem; margin-top: -16px;
+            box-shadow: 0 4px 12px rgba(39,174,96,0.3);
+        }
+        
+        .content { padding: 12px 14px 20px; }
+        .page { display: none; animation: fadeUp 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; border-radius: var(--radius-card);
+            padding: 20px 18px; margin-bottom: 16px;
+        }
+        .hero h1 { font-weight: 700; font-size: 1.4rem; }
+        .hero .lead { font-size: 0.85rem; opacity: 0.9; margin: 2px 0 4px; }
+        .hero .sub-lead { font-size: 0.7rem; opacity: 0.7; }
+        
+        .quick-help { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; margin-top: 10px; }
+        .quick-help .input-group-custom { display: flex; background: white; border-radius: 10px; overflow: hidden; }
+        .quick-help .input-group-custom input { flex: 1; border: none; padding: 10px 12px; font-size: 0.85rem; outline: none; min-width: 0; }
+        .quick-help .input-group-custom button { background: var(--primary); color: white; border: none; padding: 10px 16px; cursor: pointer; }
+        .quick-help .chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+        .quick-help .chips .chip {
+            background: rgba(255,255,255,0.2); color: white; border: none;
+            border-radius: 20px; padding: 4px 12px; font-size: 0.65rem; cursor: pointer;
+        }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+        .stats-card {
+            background: white; border-radius: 12px; padding: 12px 4px;
+            text-align: center; border: 1px solid #eee;
+        }
+        .stats-card .number { font-size: 1.2rem; font-weight: 700; }
+        .stats-card .label { font-size: 0.5rem; color: var(--text-light); text-transform: uppercase; }
+        .stats-card .number.primary { color: var(--primary); }
+        .stats-card .number.danger { color: var(--danger); }
+        .stats-card .number.secondary { color: var(--secondary); }
+        
+        .event-card {
+            background: white; border-radius: var(--radius-card);
+            padding: 14px; margin-bottom: 12px; border: 1px solid #eee;
+            cursor: pointer;
+        }
+        .badge-type { font-size: 0.6rem; padding: 2px 10px; border-radius: 20px; font-weight: 600; display: inline-block; }
+        .badge-type.search { background: var(--danger-light); color: var(--danger); }
+        .badge-type.veterans { background: #D6EAF8; color: var(--secondary); }
+        .badge-type.subbotnik { background: var(--primary-light); color: var(--primary); }
+        .badge-type.donation { background: var(--warning-light); color: #E67E22; }
+        .badge-type.animals { background: #E8DAEF; color: #8E44AD; }
+        .badge-type.other { background: #F5EEF8; color: #6C3483; }
+        
+        .badge-status { font-size: 0.55rem; padding: 2px 10px; border-radius: 20px; font-weight: 600; display: inline-block; }
+        .badge-status.urgent { background: var(--danger-light); color: var(--danger); animation: pulse 2s infinite; }
+        .badge-status.active { background: var(--primary-light); color: var(--primary); }
+        .badge-status.full { background: #D6EAF8; color: var(--secondary); }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+        
+        .event-card .title { font-weight: 600; font-size: 0.95rem; margin: 4px 0 2px; }
+        .event-card .meta { font-size: 0.75rem; color: var(--text-light); }
+        .progress-custom { height: 3px; background: #eee; border-radius: 4px; margin: 6px 0; overflow: hidden; }
+        .progress-custom .bar { height: 100%; background: var(--primary); }
+        .event-card .skills { display: flex; gap: 4px; flex-wrap: wrap; margin: 4px 0; }
+        .event-card .skills .tag { background: #f0f0f0; padding: 2px 10px; border-radius: 12px; font-size: 0.6rem; color: var(--text-light); }
+        
+        .btn-action {
+            width: 100%; padding: 8px; border: none; border-radius: var(--radius-button);
+            font-weight: 600; font-size: 0.8rem; margin-top: 6px; cursor: pointer;
+        }
+        .btn-action.primary { background: var(--primary); color: white; }
+        .btn-action.outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .leader-item {
+            display: flex; align-items: center; gap: 10px; background: white;
+            padding: 10px 14px; border-radius: 12px; margin-bottom: 6px; border: 1px solid #eee;
+        }
+        .leader-item.me { border-color: var(--primary); background: var(--primary-light); }
+        .leader-item .medal { font-size: 1.3rem; min-width: 24px; text-align: center; }
+        .leader-item .name { font-weight: 600; font-size: 0.9rem; }
+        .leader-item .points { margin-left: auto; font-weight: 600; color: var(--primary); font-size: 0.9rem; }
+        
+        .location-tag {
+            display: inline-block; background: #f0f0f0; padding: 4px 12px;
+            border-radius: 20px; font-size: 0.7rem; color: var(--text-light);
+            margin: 2px; cursor: pointer; border: none;
+        }
+        
+        #map { height: 300px; border-radius: var(--radius-card); overflow: hidden; border: 1px solid #eee; z-index: 1; }
+        .map-legend {
+            background: white; padding: 8px 12px; border-radius: 10px;
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
+            font-size: 0.7rem; border: 1px solid #eee;
+        }
+        .map-legend .item { display: flex; align-items: center; gap: 4px; }
+        .map-legend .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        
+        .filters-sidebar {
+            background: white; border-radius: var(--radius-card);
+            padding: 14px; border: 1px solid #eee; margin-bottom: 12px;
+        }
+        .filters-sidebar select, .filters-sidebar input {
+            width: 100%; padding: 8px 10px; border: 1px solid #ddd;
+            border-radius: 8px; font-size: 0.8rem; margin-bottom: 8px; background: white;
+        }
+        .filters-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        
+        .form-group { margin-bottom: 12px; }
+        .form-group label { font-weight: 500; font-size: 0.85rem; display: block; margin-bottom: 4px; }
+        .form-group label .required { color: var(--danger); }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px 12px; border: 1px solid #ddd;
+            border-radius: 10px; font-size: 0.9rem; background: white;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(39,174,96,0.1);
+        }
+        .form-group .helper { font-size: 0.7rem; color: var(--text-light); margin-top: 4px; }
+        .form-group .error-text { font-size: 0.7rem; color: var(--danger); margin-top: 4px; display: none; }
+        .form-group.error input, .form-group.error select { border-color: var(--danger); }
+        .form-group.error .error-text { display: block; }
+        
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none; justify-content: center;
+            align-items: center; z-index: 10000; padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: white; border-radius: 20px; padding: 24px;
+            max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto;
+        }
+        .modal-content .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-content .modal-header button { background: none; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer; }
+        
+        .toast-container {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 99999; display: flex; flex-direction: column; gap: 8px;
+            align-items: center; width: 90%; max-width: 400px; pointer-events: none;
+        }
+        .toast {
+            padding: 12px 20px; border-radius: 12px; color: white;
+            font-weight: 500; font-size: 0.9rem; animation: slideDown 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15); width: 100%;
+            text-align: center; pointer-events: auto;
+        }
+        .toast.success { background: var(--primary); }
+        .toast.error { background: var(--danger); }
+        .toast.info { background: var(--secondary); }
+        .toast.warning { background: #E67E22; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .auth-card {
+            max-width: 400px; margin: 0 auto; background: white;
+            border-radius: 20px; padding: 24px; border: 1px solid #eee;
+        }
+        .auth-card .auth-title { text-align: center; font-size: 1.3rem; font-weight: 600; margin-bottom: 16px; }
+        .auth-card .auth-title i { color: var(--primary); }
+        
+        .role-selector { display: flex; gap: 8px; margin-bottom: 14px; }
+        .role-selector .role-option {
+            flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 10px;
+            text-align: center; cursor: pointer; font-weight: 500; font-size: 0.85rem;
+            background: white;
+        }
+        .role-selector .role-option.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        
+        .footer {
+            background: white; padding: 16px 0; border-top: 1px solid #eee;
+            text-align: center; font-size: 0.7rem; color: var(--text-light);
+        }
+        
+        .btn { border-radius: var(--radius-button); font-weight: 600; }
+        .btn-primary { background: var(--primary); border-color: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: white; }
+        .btn-outline-primary { color: var(--primary); border-color: var(--primary); }
+        .btn-social {
+            background: var(--secondary); border: none; border-radius: 8px;
+            padding: 8px 14px; font-size: 0.8rem; color: white; cursor: pointer; font-weight: 600;
+        }
+        
+        .profile-stats { display: flex; justify-content: center; gap: 16px; margin-top: 6px; }
+        .profile-stats .stat-value { font-weight: 600; }
+        .profile-stats .stat-value.primary { color: var(--primary); }
+        .profile-stats .stat-value.secondary { color: var(--secondary); }
+        
+        .empty-state { text-align: center; padding: 20px; color: var(--text-light); font-size: 0.8rem; }
+        
+        /* ================================================================= */
+        /* ================= ДЕСКТОПНАЯ ВЕРСИЯ (≥ 992px) ================= */
+        /* ================================================================= */
+        @media (min-width: 992px) {
+            body { padding: 24px 20px; background: #e8ecf1; }
+            
+            .app-container {
+                max-width: 1320px;
+                margin: 0 auto;
+                border-radius: 24px;
+                min-height: calc(100vh - 48px);
+                box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+                padding-bottom: 0;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* --- Шапка --- */
+            .header {
+                padding: 0 32px;
+                height: 76px;
+                border-radius: 24px 24px 0 0;
+                gap: 24px;
+                flex-wrap: nowrap;
+            }
+            .logo { font-size: 1.35rem; gap: 10px; }
+            .logo .sub { font-size: 0.65rem; }
+            
+            /* --- Десктопная навигация --- */
+            .desktop-nav {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                flex: 1;
+                margin: 0 20px;
+                height: 100%;
+            }
+            .desktop-nav .nav-link {
+                background: none;
+                border: none;
+                color: var(--text-dark);
+                padding: 10px 18px;
+                border-radius: 10px;
+                font-weight: 500;
+                font-size: 0.95rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: background 0.15s, color 0.15s;
+                white-space: nowrap;
+            }
+            .desktop-nav .nav-link i { font-size: 1.15rem; }
+            .desktop-nav .nav-link:hover {
+                background: var(--bg-light);
+                color: var(--primary);
+            }
+            .desktop-nav .nav-link.active {
+                background: var(--primary-light);
+                color: var(--primary);
+                font-weight: 600;
+            }
+            
+            /* --- Правые действия в шапке --- */
+            .header-actions { gap: 10px; }
+            .header-actions .btn-icon { font-size: 1.35rem; padding: 8px 10px; }
+            .header-actions .btn-sm {
+                font-size: 0.85rem;
+                padding: 8px 20px;
+                border-radius: 10px;
+                font-weight: 600;
+            }
+            
+            /* --- Скрываем мобильный таб-бар --- */
+            .tab-bar { display: none !important; }
+            
+            /* --- Контент --- */
+            .content { padding: 32px; flex: 1; }
+            .page { animation: none; }
+            .section-title { font-size: 1.25rem !important; }
+            
+            /* --- Главная: 2 колонки --- */
+            .home-layout {
+                display: grid;
+                grid-template-columns: 1fr 360px;
+                gap: 32px;
+                align-items: start;
+            }
+            .home-main { min-width: 0; }
+            .home-side { position: sticky; top: 100px; }
+            
+            .hero {
+                padding: 44px 40px;
+                margin-bottom: 28px;
+                border-radius: 20px;
+            }
+            .hero h1 { font-size: 2.2rem; }
+            .hero .lead { font-size: 1.15rem; }
+            .hero .sub-lead { font-size: 0.9rem; }
+            .hero .quick-help { padding: 18px; margin-top: 18px; }
+            .hero .quick-help .input-group-custom input { padding: 14px 18px; font-size: 1rem; }
+            .hero .quick-help .input-group-custom button { padding: 14px 24px; font-size: 1.1rem; }
+            .hero .quick-help .chips { gap: 8px; margin-top: 12px; }
+            .hero .quick-help .chips .chip { padding: 8px 18px; font-size: 0.8rem; }
+            
+            .stats-grid { gap: 18px; margin-bottom: 28px; }
+            .stats-card { padding: 24px 12px; border-radius: 16px; transition: transform 0.2s, box-shadow 0.2s; }
+            .stats-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.08); }
+            .stats-card .number { font-size: 2.2rem; }
+            .stats-card .label { font-size: 0.75rem; }
+            
+            /* --- Сетка мероприятий --- */
+            .events-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            .event-card {
+                margin-bottom: 0;
+                padding: 20px;
+                border-radius: 16px;
+                transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            }
+            .event-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 16px 40px rgba(0,0,0,0.10);
+                border-color: var(--primary-light);
+            }
+            .event-card .title { font-size: 1.1rem; margin: 8px 0 6px; }
+            .event-card .meta { font-size: 0.85rem; margin: 2px 0; }
+            .event-card .skills .tag { font-size: 0.7rem; padding: 4px 12px; }
+            .btn-action { padding: 11px; font-size: 0.9rem; }
+            .badge-type, .badge-status { font-size: 0.7rem; padding: 4px 14px; }
+            
+            /* --- Лидерборд в сайдбаре --- */
+            .home-side .leader-item {
+                padding: 14px 18px;
+                margin-bottom: 10px;
+                border-radius: 14px;
+            }
+            .home-side .leader-item .name { font-size: 1rem; }
+            .home-side .leader-item .points { font-size: 1rem; }
+            
+            /* --- События: 2 колонки (фильтр + список) --- */
+            .events-layout {
+                display: grid;
+                grid-template-columns: 300px 1fr;
+                gap: 28px;
+                align-items: start;
+            }
+            .events-layout .filters-sidebar {
+                position: sticky;
+                top: 100px;
+                margin-bottom: 0;
+                padding: 22px;
+                border-radius: 16px;
+            }
+            .events-layout .filters-row { grid-template-columns: 1fr; }
+            .events-layout .filters-sidebar select { font-size: 0.9rem; padding: 10px 14px; }
+            .events-layout .events-grid { grid-template-columns: repeat(2, 1fr); }
+            
+            /* --- Карта / Календарь --- */
+            #map { height: 600px; border-radius: 20px; }
+            .map-legend { padding: 14px 20px; font-size: 0.85rem; gap: 16px; border-radius: 14px; }
+            #calendar { padding: 24px !important; border-radius: 20px !important; }
+            
+            /* --- Формы --- */
+            .form-layout {
+                display: grid;
+                grid-template-columns: 1fr 360px;
+                gap: 28px;
+                align-items: start;
+            }
+            .form-layout .form-side { position: sticky; top: 100px; }
+            .form-layout .card {
+                padding: 28px !important;
+                border-radius: 18px !important;
+            }
+            .form-group { margin-bottom: 18px; }
+            .form-group label { font-size: 0.95rem; margin-bottom: 8px; }
+            .form-group input, .form-group select, .form-group textarea {
+                padding: 12px 16px;
+                font-size: 0.95rem;
+            }
+            .form-group textarea { min-height: 100px; resize: vertical; }
+            
+            /* --- Профиль --- */
+            .profile-layout {
+                display: grid;
+                grid-template-columns: 340px 1fr;
+                gap: 28px;
+                align-items: start;
+            }
+            .profile-side { position: sticky; top: 100px; }
+            .profile-side .card {
+                padding: 28px !important;
+                border-radius: 18px !important;
+            }
+            .profile-side .profile-avatar { font-size: 5rem !important; }
+            
+            /* --- Модальное окно --- */
+            .modal-content { max-width: 560px; padding: 32px; }
+            
+            /* --- Авторизация --- */
+            .auth-layout { display: flex; justify-content: center; padding: 40px 0; }
+            .auth-card { padding: 40px; border-radius: 24px; max-width: 460px; }
+            .auth-card .auth-title { font-size: 1.6rem; }
+            
+            /* --- Пустое состояние --- */
+            .empty-state { font-size: 0.95rem; padding: 40px 20px; }
+        }
+        
+        @media (min-width: 1400px) {
+            .home-layout { grid-template-columns: 1fr 400px; }
+            .events-layout .events-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        
+        @media (max-width: 991px) {
+            .home-layout, .events-layout, .form-layout, .profile-layout { display: block; }
+            .home-side, .form-side, .profile-side { margin-top: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+    
+    <header class="header">
+        <button class="logo" onclick="showPage('home')">
+            <i class="bi bi-heart-fill"></i> ДОБРО 11
+            <span class="sub">Республика Коми</span>
+        </button>
+        
+        <!-- Десктопная навигация (видна только на ПК) -->
+        <nav class="desktop-nav" id="desktopNav">
+            <button class="nav-link active" data-nav="home" onclick="showPage('home')"><i class="bi bi-house-door"></i> Главная</button>
+            <button class="nav-link" data-nav="events" onclick="showPage('events')"><i class="bi bi-calendar-event"></i> Мероприятия</button>
+            <button class="nav-link" data-nav="map" onclick="showPage('map')"><i class="bi bi-map"></i> Карта</button>
+            <button class="nav-link" data-nav="calendar" onclick="showPage('calendar')"><i class="bi bi-calendar3"></i> Календарь</button>
+            <button class="nav-link" data-nav="create" onclick="showPage('create')"><i class="bi bi-plus-circle"></i> Создать</button>
+        </nav>
+        
+        <div class="header-actions">
+            <button class="btn-icon" onclick="showPage('profile')" title="Профиль"><i class="bi bi-person-circle"></i></button>
+            <button class="btn btn-sm btn-outline-secondary" id="loginBtn" onclick="showPage('login')">Войти</button>
+            <button class="btn btn-sm btn-primary" id="registerBtn" onclick="showPage('register')">Регистрация</button>
+        </div>
+    </header>
+    
+    <div class="content">
+        
+        <!-- ==================== ГЛАВНАЯ ==================== -->
+        <div class="page active" id="page-home">
+            <div class="home-layout">
+                <div class="home-main">
+                    <div class="hero">
+                        <h1><i class="bi bi-heart-fill"></i> Добро 11</h1>
+                        <div class="lead">Единый центр волонтерских мероприятий</div>
+                        <div class="sub-lead">Республика Коми</div>
+                        <p style="font-size:0.8rem;opacity:0.8;margin:4px 0 0;">"Вместе мы можем больше!"</p>
+                        
+                        <div class="quick-help">
+                            <div class="input-group-custom">
+                                <input type="text" placeholder="💬 Расскажите, какая помощь нужна..." id="quickHelp">
+                                <button onclick="quickHelp()" type="button"><i class="bi bi-magic"></i></button>
+                            </div>
+                            <div class="chips">
+                                <button class="chip" onclick="fillHelp('Нужна помощь ветерану с уборкой квартиры в Сыктывкаре')">❤️ Ветерану</button>
+                                <button class="chip" onclick="fillHelp('Пропал человек в лесу под Ухтой')">🔍 Поиск</button>
+                                <button class="chip" onclick="fillHelp('Хочу организовать субботник в Воркуте')">🌿 Субботник</button>
+                                <button class="chip" onclick="fillHelp('Нужна помощь в приюте для животных в Печоре')">🐾 Животные</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stats-card"><div class="number primary" id="statEvents">0</div><div class="label">Мероприятий</div></div>
+                        <div class="stats-card"><div class="number danger" id="statActive">0</div><div class="label">Активных</div></div>
+                        <div class="stats-card"><div class="number secondary" id="statUsers">0</div><div class="label">Волонтёров</div></div>
+                        <div class="stats-card"><div class="number primary" id="statDone">0%</div><div class="label">Закрыто</div></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="section-title" style="font-weight:600;font-size:1rem;">
+                            <i class="bi bi-fire" style="color:var(--danger);"></i> Активные
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="showPage('events')">Все →</button>
+                    </div>
+                    
+                    <div class="events-grid" id="homeEvents"></div>
+                </div>
+                
+                <aside class="home-side">
+                    <h5 class="section-title" style="font-weight:600;font-size:1rem;margin-bottom:12px;">
+                        <i class="bi bi-trophy" style="color:#F1C40F;"></i> Лучшие волонтёры
+                    </h5>
+                    <div id="leaderboardHome"></div>
+                    
+                    <h5 class="section-title mt-4" style="font-weight:600;font-size:1rem;margin-bottom:12px;">
+                        <i class="bi bi-geo-alt"></i> Населённые пункты
+                    </h5>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        <button class="location-tag" onclick="showPage('events')">Сыктывкар</button>
+                        <button class="location-tag" onclick="showPage('events')">Ухта</button>
+                        <button class="location-tag" onclick="showPage('events')">Воркута</button>
+                        <button class="location-tag" onclick="showPage('events')">Печора</button>
+                        <button class="location-tag" onclick="showPage('events')">Усинск</button>
+                        <button class="location-tag" onclick="showPage('events')">Сосногорск</button>
+                        <button class="location-tag" onclick="showPage('events')">Инта</button>
+                        <button class="location-tag" onclick="showPage('events')">Емва</button>
+                        <button class="location-tag" onclick="showPage('events')">Выльгорт</button>
+                    </div>
+                </aside>
+            </div>
+        </div>
+        
+        <!-- ==================== МЕРОПРИЯТИЯ ==================== -->
+        <div class="page" id="page-events">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="section-title" style="font-weight:600;font-size:1.2rem;">
+                    <i class="bi bi-calendar-event"></i> Мероприятия
+                </h5>
+                <button class="btn btn-sm btn-primary" onclick="showPage('create')"><i class="bi bi-plus-circle"></i> Создать</button>
+            </div>
+            
+            <div class="events-layout">
+                <aside class="filters-sidebar">
+                    <div style="font-weight:600;font-size:0.95rem;margin-bottom:14px;">
+                        <i class="bi bi-funnel"></i> Фильтры
+                    </div>
+                    <div class="form-group" style="margin-bottom:12px;">
+                        <label style="font-size:0.85rem;">📋 Тип</label>
+                        <select id="filterType">
+                            <option value="">Все типы</option>
+                            <option value="search">🔍 Поиск</option>
+                            <option value="veterans">❤️ Ветераны</option>
+                            <option value="subbotnik">🌿 Субботник</option>
+                            <option value="donation">🩸 Донорство</option>
+                            <option value="animals">🐾 Животные</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:12px;">
+                        <label style="font-size:0.85rem;">📍 Город</label>
+                        <select id="filterCity">
+                            <option value="">Все города</option>
+                            <option value="Сыктывкар">Сыктывкар</option>
+                            <option value="Ухта">Ухта</option>
+                            <option value="Воркута">Воркута</option>
+                            <option value="Печора">Печора</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100 btn-sm" onclick="applyFilter()"><i class="bi bi-search"></i> Применить</button>
+                    <button class="btn btn-outline-secondary w-100 btn-sm mt-2" onclick="resetFilter()"><i class="bi bi-x-circle"></i> Сбросить</button>
+                </aside>
+                
+                <div class="events-grid" id="eventsList"></div>
+            </div>
+        </div>
+        
+        <!-- ==================== КАРТА ==================== -->
+        <div class="page" id="page-map">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="section-title" style="font-weight:600;font-size:1.2rem;">
+                    <i class="bi bi-map"></i> Карта мероприятий
+                </h5>
+                <button class="btn btn-sm btn-outline-secondary" onclick="showPage('events')"><i class="bi bi-list"></i> Списком</button>
+            </div>
+            <div class="map-legend">
+                <span class="item"><span class="dot" style="background:#E74C3C;"></span> Поиск</span>
+                <span class="item"><span class="dot" style="background:#2980B9;"></span> Ветераны</span>
+                <span class="item"><span class="dot" style="background:#27AE60;"></span> Субботник</span>
+                <span class="item"><span class="dot" style="background:#F1C40F;"></span> Донорство</span>
+                <span class="item"><span class="dot" style="background:#8E44AD;"></span> Животные</span>
+            </div>
+            <div id="map"></div>
+        </div>
+        
+        <!-- ==================== КАЛЕНДАРЬ ==================== -->
+        <div class="page" id="page-calendar">
+            <h5 class="section-title" style="font-weight:600;font-size:1.2rem;">
+                <i class="bi bi-calendar3"></i> Календарь мероприятий
+            </h5>
+            <div id="calendar" style="background:white;border-radius:14px;padding:12px;border:1px solid #eee;"></div>
+        </div>
+        
+        <!-- ==================== ПРОФИЛЬ ==================== -->
+        <div class="page" id="page-profile">
+            <div id="profileContent"></div>
+        </div>
+        
+        <!-- ==================== РЕДАКТИРОВАНИЕ ПРОФИЛЯ ==================== -->
+        <div class="page" id="page-profile-edit">
+            <button class="btn btn-sm btn-outline-secondary mb-4" onclick="showPage('profile')">
+                <i class="bi bi-arrow-left"></i> Назад
+            </button>
+            <h5 class="section-title" style="font-weight:600;font-size:1.2rem;">
+                <i class="bi bi-pencil-square"></i> Редактирование профиля
+            </h5>
+            
+            <div class="form-layout">
+                <div class="card border-0 shadow-sm rounded-4 p-3">
+                    <div class="form-group" id="fg-editName">
+                        <label>👤 ФИО <span class="required">*</span></label>
+                        <input type="text" id="editName" placeholder="Иванова Анна Петровна">
+                        <div class="error-text">Введите ФИО</div>
+                    </div>
+                    <div class="form-group" id="fg-editEmail">
+                        <label>📧 Email <span class="required">*</span></label>
+                        <input type="email" id="editEmail" placeholder="example@mail.ru">
+                        <div class="error-text">Введите корректный email</div>
+                    </div>
+                    <div class="form-group" id="fg-editPhone">
+                        <label>📱 Телефон <span class="required">*</span></label>
+                        <input type="tel" id="editPhone" placeholder="+7 999 123-45-67">
+                        <div class="error-text">Введите телефон</div>
+                    </div>
+                </div>
+                
+                <div class="form-side">
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                        <div class="form-group">
+                            <label>🏙️ Город</label>
+                            <select id="editCity">
+                                <option value="">Не указан</option>
+                                <option>Сыктывкар</option>
+                                <option>Ухта</option>
+                                <option>Воркута</option>
+                                <option>Печора</option>
+                                <option>Усинск</option>
+                                <option>Сосногорск</option>
+                                <option>Инта</option>
+                                <option>Емва</option>
+                                <option>Выльгорт</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>📝 О себе</label>
+                            <textarea id="editAbout" rows="3" placeholder="Коротко о себе..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>🛠️ Навыки (через запятую)</label>
+                            <input type="text" id="editSkills" placeholder="Медицина, IT, Альпинизм">
+                        </div>
+                    </div>
+                    
+                    <div class="card border-0 shadow-sm rounded-4 p-3">
+                        <h6 style="font-size:0.9rem;margin-bottom:12px;">
+                            <i class="bi bi-shield-lock"></i> Смена пароля
+                        </h6>
+                        <div class="form-group" id="fg-editPassword">
+                            <label>🔒 Новый пароль</label>
+                            <input type="password" id="editPassword" placeholder="••••••••">
+                            <div class="helper">Оставьте пустым, если не хотите менять</div>
+                            <div class="error-text">Минимум 8 символов</div>
+                        </div>
+                        <div class="form-group" id="fg-editConfirm">
+                            <label>🔒 Подтверждение</label>
+                            <input type="password" id="editConfirm" placeholder="••••••••">
+                            <div class="error-text">Пароли не совпадают</div>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn btn-primary flex-grow-1" onclick="saveProfile()">
+                                <i class="bi bi-check-circle"></i> Сохранить
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="showPage('profile')">
+                                Отмена
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ==================== ДЕТАЛЬНАЯ КАРТОЧКА ==================== -->
+        <div class="page" id="page-event-detail">
+            <div id="eventDetailContent"></div>
+        </div>
+        
+        <!-- ==================== СОЗДАНИЕ ==================== -->
+        <div class="page" id="page-create">
+            <button class="btn btn-sm btn-outline-secondary mb-4" onclick="showPage('events')"><i class="bi bi-arrow-left"></i> Назад</button>
+            <h5 class="section-title" style="font-weight:600;font-size:1.2rem;">
+                <i class="bi bi-plus-circle"></i> Создание мероприятия
+            </h5>
+            
+            <div class="form-layout">
+                <div class="card border-0 shadow-sm rounded-4 p-3">
+                    <div class="form-group" id="fg-createTitle">
+                        <label>📝 Название <span class="required">*</span></label>
+                        <input type="text" placeholder="Поиск пропавшего..." id="createTitle">
+                        <div class="error-text">Введите название</div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>📋 Тип <span class="required">*</span></label>
+                                <select id="createType">
+                                    <option value="search">🔍 Поиск пропавшего</option>
+                                    <option value="veterans">❤️ Помощь ветеранам</option>
+                                    <option value="subbotnik">🌿 Субботник</option>
+                                    <option value="donation">🩸 Донорство</option>
+                                    <option value="animals">🐾 Животные</option>
+                                    <option value="other">📌 Другое</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>📍 Населённый пункт <span class="required">*</span></label>
+                                <select id="createCity">
+                                    <option>Сыктывкар</option>
+                                    <option>Ухта</option>
+                                    <option>Воркута</option>
+                                    <option>Печора</option>
+                                    <option>Усинск</option>
+                                    <option>Сосногорск</option>
+                                    <option>Инта</option>
+                                    <option>Емва</option>
+                                    <option>Выльгорт</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>📅 Дата начала</label>
+                                <input type="datetime-local" id="createDateStart">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>📅 Дата окончания</label>
+                                <input type="datetime-local" id="createDateEnd">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" id="fg-createDescription">
+                        <label>📝 Описание <span class="required">*</span></label>
+                        <textarea rows="5" placeholder="Подробное описание..." id="createDescription"></textarea>
+                        <div class="error-text">Введите описание</div>
+                    </div>
+                </div>
+                
+                <div class="form-side">
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>👥 Нужно</label>
+                                    <input type="number" id="createNeeded" value="10" min="1">
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>🔞 Возраст</label>
+                                    <select id="createAge">
+                                        <option value="0">Без</option>
+                                        <option value="14">14+</option>
+                                        <option value="16">16+</option>
+                                        <option value="18">18+</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>🛠️ Навыки</label>
+                            <input type="text" id="createSkills" placeholder="Альпинизм, Медицина">
+                        </div>
+                        <div class="form-group">
+                            <label>📱 Телефон</label>
+                            <input type="tel" id="createPhone" placeholder="+7 999 123-45-67">
+                        </div>
+                        <div class="form-group">
+                            <label>📧 Email</label>
+                            <input type="email" id="createEmail" placeholder="org@mail.ru">
+                        </div>
+                    </div>
+                    
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                        <h6 style="font-size:0.9rem;margin-bottom:12px;">
+                            <i class="bi bi-robot"></i> Текстовый помощник
+                        </h6>
+                        <div class="form-group">
+                            <textarea class="form-control" rows="3" id="assistantInput" placeholder="Моей бабушке нужна уборка..."></textarea>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm w-100" onclick="assistantFill()">
+                            <i class="bi bi-magic"></i> Разобрать текст
+                        </button>
+                    </div>
+                    
+                    <button class="btn btn-primary w-100" onclick="createEvent()">
+                        <i class="bi bi-send"></i> Отправить на модерацию
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ==================== ВХОД ==================== -->
+        <div class="page" id="page-login">
+            <div class="auth-layout">
+                <div class="auth-card">
+                    <div class="auth-title"><i class="bi bi-heart-fill"></i> Добро 11</div>
+                    <div style="text-align:center;color:var(--text-light);font-size:0.9rem;margin-bottom:24px;">Вход в систему</div>
+                    <div class="form-group" id="fg-loginEmail">
+                        <label>📧 Email</label>
+                        <input type="email" id="loginEmail" placeholder="example@mail.ru">
+                        <div class="error-text">Введите email</div>
+                    </div>
+                    <div class="form-group" id="fg-loginPassword">
+                        <label>🔒 Пароль</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••">
+                        <div class="error-text">Введите пароль</div>
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="doLogin()" style="padding:12px;">✅ Войти</button>
+                    <hr>
+                    <div class="text-center" style="font-size:0.9rem;">Нет аккаунта? <button class="btn btn-link p-0" onclick="showPage('register')" style="text-decoration:none;color:var(--primary);font-weight:600;">Зарегистрироваться</button></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ==================== РЕГИСТРАЦИЯ ==================== -->
+        <div class="page" id="page-register">
+            <div class="auth-layout">
+                <div class="auth-card">
+                    <div class="auth-title"><i class="bi bi-person-plus"></i> Регистрация</div>
+                    <div style="text-align:center;color:var(--text-light);font-size:0.9rem;margin-bottom:16px;">Присоединяйтесь к движению</div>
+                    <div class="role-selector">
+                        <button class="role-option active" onclick="selectRole(this, 'volunteer')" type="button" id="roleVolunteer"><i class="bi bi-person"></i> Волонтёр</button>
+                        <button class="role-option" onclick="selectRole(this, 'organizer')" type="button" id="roleOrganizer"><i class="bi bi-building"></i> Организатор</button>
+                    </div>
+                    <div class="form-group" id="fg-regEmail">
+                        <label>📧 Email <span class="required">*</span></label>
+                        <input type="email" id="regEmail" placeholder="example@mail.ru">
+                        <div class="error-text">Введите корректный email</div>
+                    </div>
+                    <div class="form-group" id="fg-regName">
+                        <label>👤 ФИО <span class="required">*</span></label>
+                        <input type="text" id="regName" placeholder="Иванова Анна Петровна">
+                        <div class="error-text">Введите ФИО</div>
+                    </div>
+                    <div class="form-group" id="fg-regPhone">
+                        <label>📱 Телефон <span class="required">*</span></label>
+                        <input type="tel" id="regPhone" placeholder="+7 999 123-45-67">
+                        <div class="error-text">Введите телефон</div>
+                    </div>
+                    <div class="form-group" id="fg-regPassword">
+                        <label>🔒 Пароль <span class="required">*</span></label>
+                        <input type="password" id="regPassword" placeholder="••••••••">
+                        <div class="helper">Минимум 8 символов</div>
+                        <div class="error-text">Минимум 8 символов</div>
+                    </div>
+                    <div class="form-group" id="fg-regConfirm">
+                        <label>🔒 Подтверждение <span class="required">*</span></label>
+                        <input type="password" id="regConfirm" placeholder="••••••••">
+                        <div class="error-text">Пароли не совпадают</div>
+                    </div>
+                    <div class="form-group">
+                        <label>🛠️ Навыки (через запятую)</label>
+                        <input type="text" id="regSkills" placeholder="Медицина, IT, Альпинизм">
+                    </div>
+                    <div style="margin-bottom:16px;" id="fg-regConsent">
+                        <input type="checkbox" id="regConsent">
+                        <label for="regConsent" style="font-size:0.8rem;color:var(--text-light);">Я согласен на обработку персональных данных (152-ФЗ)</label>
+                        <div class="error-text" style="display:none;">Необходимо согласие</div>
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="doRegister()" style="padding:12px;">📝 Зарегистрироваться</button>
+                    <hr>
+                    <div class="text-center" style="font-size:0.9rem;">Уже есть аккаунт? <button class="btn btn-link p-0" onclick="showPage('login')" style="text-decoration:none;color:var(--primary);font-weight:600;">Войти</button></div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- ===== НИЖНИЙ ТАБ-БАР (только мобильные) ===== -->
+    <div class="tab-bar">
+        <button class="tab-item active" onclick="showPage('home')" data-tab="home"><i class="bi bi-house"></i> Главная</button>
+        <button class="tab-item" onclick="showPage('events')" data-tab="events"><i class="bi bi-calendar-event"></i> События</button>
+        <button class="tab-item create-tab" onclick="showPage('create')" data-tab="create"><i class="bi bi-plus"></i></button>
+        <button class="tab-item" onclick="showPage('map')" data-tab="map"><i class="bi bi-map"></i> Карта</button>
+        <button class="tab-item" onclick="showPage('profile')" data-tab="profile"><i class="bi bi-person"></i> Профиль</button>
+    </div>
+    
+    <div class="footer">
+        © 2026 «Добро 11» — Волонтёрская платформа Республики Коми
+    </div>
+</div>
+
+<!-- ===== МОДАЛЬНОЕ ОКНО ===== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5>📱 Публикация в соцсетях</h5>
+            <button onclick="closeModal()" type="button">✕</button>
+        </div>
+        <div class="form-group">
+            <label>📝 Текст поста</label>
+            <textarea class="form-control" rows="4" id="postText"></textarea>
+        </div>
+        <div class="mb-3">
+            <label>📌 Выберите соцсети</label>
+            <div class="d-flex gap-4">
+                <div><input type="checkbox" id="checkVK" checked> VK</div>
+                <div><input type="checkbox" id="checkOK"> OK</div>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary flex-grow-1" onclick="publishPost()" type="button">📤 Опубликовать</button>
+            <button class="btn btn-outline-secondary" onclick="closeModal()" type="button">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+// ХРАНИЛИЩЕ
+// ============================================================
+const STORAGE_USERS = 'dobro11_users';
+const STORAGE_CURRENT = 'dobro11_current';
+const STORAGE_EVENTS = 'dobro11_events';
+
+let allUsers = [];
+let currentUser = null;
+let EVENTS = [];  // Пустой массив — всё создаётся пользователями
+
+// ============================================================
+// СОХРАНЕНИЕ / ЗАГРУЗКА
+// ============================================================
+function saveUsers() {
+    try { localStorage.setItem(STORAGE_USERS, JSON.stringify(allUsers)); }
+    catch(e) { console.warn(e); }
+}
+function loadUsers() {
+    try {
+        const data = localStorage.getItem(STORAGE_USERS);
+        allUsers = data ? JSON.parse(data) : [];
+        if (!Array.isArray(allUsers)) allUsers = [];
+    } catch(e) { allUsers = []; }
+}
+function saveCurrent() {
+    try {
+        if (currentUser) localStorage.setItem(STORAGE_CURRENT, currentUser.email);
+        else localStorage.removeItem(STORAGE_CURRENT);
+    } catch(e) { console.warn(e); }
+}
+function loadCurrent() {
+    try {
+        const email = localStorage.getItem(STORAGE_CURRENT);
+        if (email) currentUser = allUsers.find(u => u.email === email) || null;
+    } catch(e) { currentUser = null; }
+}
+function saveEvents() {
+    try { localStorage.setItem(STORAGE_EVENTS, JSON.stringify(EVENTS)); }
+    catch(e) { console.warn(e); }
+}
+function loadEvents() {
+    try {
+        const data = localStorage.getItem(STORAGE_EVENTS);
+        EVENTS = data ? JSON.parse(data) : [];
+        if (!Array.isArray(EVENTS)) EVENTS = [];
+    } catch(e) { EVENTS = []; }
+}
+
+// ============================================================
+// УТИЛИТЫ
+// ============================================================
+function isLoggedIn() { return currentUser !== null; }
+function clearErrors(ids) {
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('error');
+    });
+}
+function setError(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('error');
+}
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str == null ? '' : str);
+    return div.innerHTML;
+}
+
+// ============================================================
+// НАВИГАЦИЯ
+// ============================================================
+let mapInitialized = false;
+let calendarInitialized = false;
+let currentRole = 'volunteer';
+
+function showPage(pageId) {
+    // Скрыть все страницы
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('page-' + pageId);
+    if (target) target.classList.add('active');
+    
+    // Мобильный таб-бар
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    const activeTab = document.querySelector('.tab-item[data-tab="' + pageId + '"]');
+    if (activeTab) activeTab.classList.add('active');
+    
+    // Десктопная навигация — активное состояние
+    document.querySelectorAll('.desktop-nav .nav-link').forEach(t => t.classList.remove('active'));
+    const activeNav = document.querySelector('.desktop-nav .nav-link[data-nav="' + pageId + '"]');
+    if (activeNav) activeNav.classList.add('active');
+    
+    closeModal();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Ленивая инициализация
+    if (pageId === 'map' && !mapInitialized) { initMap(); mapInitialized = true; }
+    if (pageId === 'calendar' && !calendarInitialized) { initCalendar(); calendarInitialized = true; }
+    if (pageId === 'profile-edit') { fillProfileForm(); }
+    if (pageId === 'profile') { renderProfile(); }
+    if (pageId === 'home') { renderHome(); }
+    if (pageId === 'events') { renderEvents(); }
+    if (pageId === 'event-detail') { renderEventDetail(); }
+}
+
+// ============================================================
+// ТОСТЫ
+// ============================================================
+function showToast(message, type) {
+    type = type || 'info';
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// ============================================================
+// ЛИДЕРБОРД
+// ============================================================
+function renderLeaderboard(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    if (allUsers.length === 0) {
+        container.innerHTML = '<div class="empty-state">Пока нет волонтёров. Станьте первым! 🚀</div>';
+        return;
+    }
+    
+    const sorted = [...allUsers].sort((a, b) => (b.points || 0) - (a.points || 0));
+    const medals = ['🥇', '🥈', '🥉'];
+    
+    container.innerHTML = sorted.slice(0, 10).map((u, i) => {
+        const medal = medals[i] || (i + 1) + '.';
+        const isMe = currentUser && currentUser.email === u.email;
+        const regCount = (u.registrations || []).length;
+        return `
+            <div class="leader-item ${isMe ? 'me' : ''}">
+                <span class="medal">${medal}</span>
+                <div>
+                    <div class="name">${escapeHtml(u.name || 'Без имени')}${isMe ? ' <span style="font-size:0.65rem;color:var(--primary);">(вы)</span>' : ''}</div>
+                    <div style="font-size:0.65rem;color:var(--text-light);">${regCount} мероприятий</div>
+                </div>
+                <div class="points">${u.points || 0} баллов</div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================================
+// ГЛАВНАЯ
+// ============================================================
+function renderHome() {
+    renderHomeEvents();
+    renderLeaderboard('leaderboardHome');
+    
+    const statUsers = document.getElementById('statUsers');
+    if (statUsers) statUsers.textContent = allUsers.length;
+    
+    const statEvents = document.getElementById('statEvents');
+    if (statEvents) statEvents.textContent = EVENTS.length;
+    
+    const active = EVENTS.filter(e => e.taken < e.total).length;
+    const statActive = document.getElementById('statActive');
+    if (statActive) statActive.textContent = active;
+    
+    const closed = EVENTS.length === 0 ? 0 : Math.round((EVENTS.filter(e => e.taken >= e.total).length / EVENTS.length) * 100);
+    const statDone = document.getElementById('statDone');
+    if (statDone) statDone.textContent = closed + '%';
+}
+
+function emptyEventsHTML(text) {
+    return `
+        <div class="empty-state" style="grid-column:1/-1;padding:48px 20px;">
+            <i class="bi bi-calendar-x" style="font-size:2.5rem;color:var(--text-light);display:block;margin-bottom:12px;"></i>
+            ${text || 'Пока нет мероприятий'}
+            <div style="margin-top:14px;">
+                <button class="btn btn-primary btn-sm" onclick="showPage('create')">
+                    <i class="bi bi-plus-circle"></i> Создать первое
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function eventCardHTML(e) {
+    const isFull = e.taken >= e.total;
+    const free = e.total - e.taken;
+    const percent = e.total > 0 ? Math.round((e.taken / e.total) * 100) : 0;
+    const typeLabel = {
+        search: '🔍 Поиск', veterans: '❤️ Ветераны', subbotnik: '🌿 Субботник',
+        donation: '🩸 Донорство', animals: '🐾 Животные', other: '📌 Другое'
+    }[e.type] || '📌';
+    const isRegistered = currentUser && (currentUser.registrations || []).includes(e.id);
+    const statusBadge = isFull
+        ? '<span class="badge-status full">✅ Полно</span>'
+        : '<span class="badge-status active">⚡ ' + free + ' мест</span>';
+    
+    let actionBtn;
+    if (isRegistered) {
+        actionBtn = '<button class="btn-action outline" disabled>✅ Вы записаны</button>';
+    } else if (isFull) {
+        actionBtn = '<button class="btn-action outline" disabled>❌ Мест нет</button>';
+    } else {
+        actionBtn = '<button class="btn-action primary" onclick="event.stopPropagation(); joinEvent(' + e.id + ')">✅ Записаться</button>';
+    }
+    
+    return `
+        <div class="event-card" onclick="openEventDetail(${e.id})">
+            <div class="d-flex justify-content-between align-items-start">
+                <span class="badge-type ${e.type}">${typeLabel}</span>
+                ${statusBadge}
+            </div>
+            <div class="title">${escapeHtml(e.title)}</div>
+            <div class="meta"><i class="bi bi-geo-alt"></i> ${escapeHtml(e.city)}</div>
+            <div class="meta"><i class="bi bi-calendar"></i> ${escapeHtml(e.date)} ${escapeHtml(e.time)}</div>
+            <div class="d-flex justify-content-between mt-1">
+                <span style="font-size:0.75rem;"><i class="bi bi-people"></i> ${e.taken}/${e.total}</span>
+                <span style="font-size:0.75rem;font-weight:600;color:${isFull ? 'var(--secondary)' : 'var(--primary)'};">
+                    ${isFull ? '✅ Полно' : '⚡ ' + free + ' мест'}
+                </span>
+            </div>
+            <div class="progress-custom"><div class="bar" style="width:${percent}%;${isFull ? 'background:var(--secondary);' : ''}"></div></div>
+            ${e.skills && e.skills.length ? '<div class="skills">' + e.skills.map(s => '<span class="tag">' + escapeHtml(s) + '</span>').join('') + '</div>' : ''}
+            ${actionBtn}
+        </div>
+    `;
+}
+
+function renderHomeEvents() {
+    const container = document.getElementById('homeEvents');
+    if (!container) return;
+    const active = EVENTS.filter(e => e.taken < e.total).slice(0, 4);
+    if (active.length === 0) {
+        container.innerHTML = emptyEventsHTML('Пока нет активных мероприятий');
+        return;
+    }
+    container.innerHTML = active.map(eventCardHTML).join('');
+}
+
+function renderEvents() {
+    const container = document.getElementById('eventsList');
+    if (!container) return;
+    const type = document.getElementById('filterType').value;
+    const city = document.getElementById('filterCity').value;
+    const filtered = EVENTS.filter(e =>
+        (!type || e.type === type) && (!city || e.city === city)
+    );
+    if (filtered.length === 0) {
+        container.innerHTML = emptyEventsHTML(EVENTS.length === 0 ? 'Пока нет мероприятий' : 'Ничего не найдено по фильтрам');
+    } else {
+        container.innerHTML = filtered.map(eventCardHTML).join('');
+    }
+}
+
+function resetFilter() {
+    document.getElementById('filterType').value = '';
+    document.getElementById('filterCity').value = '';
+    renderEvents();
+    showToast('Фильтры сброшены', 'info');
+}
+
+function applyFilter() {
+    renderEvents();
+    showToast('🔍 Фильтры применены', 'info');
+}
+
+// ============================================================
+// ДЕТАЛЬНАЯ КАРТОЧКА
+// ============================================================
+let currentEventId = null;
+
+function openEventDetail(id) {
+    currentEventId = id;
+    showPage('event-detail');
+}
+
+function renderEventDetail() {
+    const container = document.getElementById('eventDetailContent');
+    if (!container) return;
+    const e = EVENTS.find(x => x.id === currentEventId);
+    if (!e) {
+        container.innerHTML = `
+            <button class="btn btn-sm btn-outline-secondary mb-4" onclick="showPage('events')"><i class="bi bi-arrow-left"></i> Назад</button>
+            <div class="empty-state">Мероприятие не найдено</div>
+        `;
+        return;
+    }
+    const isFull = e.taken >= e.total;
+    const free = e.total - e.taken;
+    const percent = e.total > 0 ? Math.round((e.taken / e.total) * 100) : 0;
+    const isRegistered = currentUser && (currentUser.registrations || []).includes(e.id);
+    const typeLabel = {
+        search: '🔍 Поиск', veterans: '❤️ Ветераны', subbotnik: '🌿 Субботник',
+        donation: '🩸 Донорство', animals: '🐾 Животные', other: '📌 Другое'
+    }[e.type] || '📌';
+    
+    let actionBtn;
+    if (isRegistered) {
+        actionBtn = '<button class="btn btn-success flex-grow-1" disabled>✅ Вы записаны</button>';
+    } else if (isFull) {
+        actionBtn = '<button class="btn btn-secondary flex-grow-1" disabled>❌ Мест нет</button>';
+    } else {
+        actionBtn = '<button class="btn btn-primary flex-grow-1" onclick="joinEvent(' + e.id + ')">✅ Записаться</button>';
+    }
+    
+    container.innerHTML = `
+        <button class="btn btn-sm btn-outline-secondary mb-4" onclick="showPage('events')"><i class="bi bi-arrow-left"></i> Назад</button>
+        <div class="card border-0 shadow-sm rounded-4 p-3">
+            <span class="badge-type ${e.type}">${typeLabel}</span>
+            <h5 class="mt-2" style="font-size:1.3rem;">${escapeHtml(e.title)}</h5>
+            <hr>
+            <div><h6 style="font-size:0.9rem;"><i class="bi bi-geo-alt"></i> Локация</h6><p style="font-size:0.95rem;">${escapeHtml(e.city)}</p></div>
+            <div><h6 style="font-size:0.9rem;"><i class="bi bi-calendar"></i> Дата</h6><p style="font-size:0.95rem;">${escapeHtml(e.date)}, ${escapeHtml(e.time)}</p></div>
+            <div><h6 style="font-size:0.9rem;"><i class="bi bi-people"></i> Волонтёры</h6>
+                <p style="font-size:0.95rem;">${e.taken} из ${e.total} записались</p>
+                <div class="progress" style="height:16px;">
+                    <div class="progress-bar bg-primary" style="width:${percent}%;">${percent}%</div>
+                </div>
+                <span class="${isFull ? 'text-secondary' : 'text-danger'}" style="font-size:0.85rem;">
+                    ${isFull ? '✅ Набор завершён' : '🔥 Осталось ' + free + ' мест'}
+                </span>
+            </div>
+            ${e.skills && e.skills.length ? `<hr><div><h6 style="font-size:0.9rem;"><i class="bi bi-tags"></i> Навыки</h6><div class="d-flex gap-2 flex-wrap">${e.skills.map(s => '<span class="badge bg-secondary">' + escapeHtml(s) + '</span>').join('')}</div></div>` : ''}
+            <hr>
+            <div><h6 style="font-size:0.9rem;"><i class="bi bi-file-text"></i> Описание</h6><p style="font-size:0.95rem;">${escapeHtml(e.description)}</p></div>
+            ${e.phone || e.email ? `<hr><div><h6 style="font-size:0.9rem;"><i class="bi bi-person"></i> Контакты организатора</h6>
+                ${e.phone ? '<p class="small text-muted mb-1"><i class="bi bi-telephone"></i> ' + escapeHtml(e.phone) + '</p>' : ''}
+                ${e.email ? '<p class="small text-muted"><i class="bi bi-envelope"></i> ' + escapeHtml(e.email) + '</p>' : ''}
+            </div>` : ''}
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                ${actionBtn}
+                <button class="btn btn-social" onclick="openModal()"><i class="bi bi-share"></i> Публиковать</button>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// ЗАПИСЬ НА МЕРОПРИЯТИЕ
+// ============================================================
+function joinEvent(id) {
+    if (!isLoggedIn()) {
+        showToast('Войдите или зарегистрируйтесь, чтобы записаться', 'warning');
+        setTimeout(() => showPage('login'), 800);
+        return;
+    }
+    const e = EVENTS.find(x => x.id === id);
+    if (!e) return;
+    if (e.taken >= e.total) { showToast('Мест нет', 'error'); return; }
+    if (!currentUser.registrations) currentUser.registrations = [];
+    if (currentUser.registrations.includes(id)) { showToast('Вы уже записаны', 'info'); return; }
+    
+    e.taken += 1;
+    currentUser.registrations.push(id);
+    currentUser.points = (currentUser.points || 0) + 10;
+    
+    saveEvents();
+    saveUsers();
+    showToast('✅ Вы записаны! +10 баллов', 'success');
+    
+    if (document.getElementById('page-home').classList.contains('active')) renderHome();
+    if (document.getElementById('page-events').classList.contains('active')) renderEvents();
+    if (document.getElementById('page-event-detail').classList.contains('active')) renderEventDetail();
+    if (document.getElementById('page-profile').classList.contains('active')) renderProfile();
+}
+
+// ============================================================
+// ПРОФИЛЬ
+// ============================================================
+function renderProfile() {
+    const container = document.getElementById('profileContent');
+    if (!container) return;
+    
+    if (!isLoggedIn()) {
+        container.innerHTML = `
+            <div style="text-align:center;padding:60px 20px;">
+                <i class="bi bi-person-lock" style="font-size:3.5rem;color:var(--text-light);"></i>
+                <h5 style="margin-top:12px;">Вы не вошли</h5>
+                <p style="color:var(--text-light);font-size:0.85rem;margin:8px 0 16px;">Войдите или зарегистрируйтесь, чтобы видеть свой профиль</p>
+                <button class="btn btn-primary me-2" onclick="showPage('login')">Войти</button>
+                <button class="btn btn-outline-primary" onclick="showPage('register')">Регистрация</button>
+            </div>
+        `;
+        return;
+    }
+    
+    const regsHTML = (currentUser.registrations || []).length
+        ? currentUser.registrations.map(id => {
+            const e = EVENTS.find(x => x.id === id);
+            if (!e) return '';
+            return `<div class="d-flex justify-content-between border-bottom py-2" style="font-size:0.85rem;">
+                <span>✅ ${escapeHtml(e.title)}</span>
+                <span class="text-success">${escapeHtml(e.date)}</span>
+            </div>`;
+        }).join('')
+        : '<div class="empty-state">Пока нет записей</div>';
+    
+    const skillsHTML = (currentUser.skills || []).length
+        ? currentUser.skills.map(s => `<span class="badge bg-secondary">${escapeHtml(s)}</span>`).join('')
+        : '<span class="text-muted" style="font-size:0.75rem;">Навыки не указаны</span>';
+    
+    const place = [...allUsers].sort((a,b) => (b.points||0)-(a.points||0)).findIndex(u => u.email === currentUser.email) + 1;
+    
+    container.innerHTML = `
+        <div class="profile-layout">
+            <aside class="profile-side">
+                <div class="card border-0 shadow-sm rounded-4 p-3" style="text-align:center;">
+                    <i class="bi bi-person-circle" style="font-size:3.5rem;color:var(--primary);"></i>
+                    <h5 style="margin-top:10px;">${escapeHtml(currentUser.name || 'Без имени')}</h5>
+                    <div style="color:var(--text-light);font-size:0.85rem;">${currentUser.role === 'organizer' ? 'Организатор' : 'Волонтёр'}</div>
+                    <div class="profile-stats" style="margin-top:14px;">
+                        <div><span class="stat-value primary">${currentUser.points || 0}</span> баллов</div>
+                        <div><span class="stat-value secondary">${(currentUser.registrations || []).length}</span> участий</div>
+                    </div>
+                    ${place > 0 ? `<div style="margin-top:8px;font-size:0.85rem;">🏆 <strong>#${place}</strong> в рейтинге</div>` : ''}
+                    
+                    <button class="btn btn-primary w-100 btn-sm mt-3" onclick="showPage('profile-edit')">
+                        <i class="bi bi-pencil"></i> Редактировать
+                    </button>
+                    <button class="btn btn-outline-secondary w-100 btn-sm mt-2" onclick="logout()">🚪 Выйти</button>
+                    <button class="btn btn-outline-danger w-100 btn-sm mt-2" onclick="deleteAccount()">🗑️ Удалить</button>
+                </div>
+            </aside>
+            
+            <div>
+                <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                    <h6 style="font-weight:600;font-size:0.95rem;margin-bottom:14px;">
+                        <i class="bi bi-person-lines-fill"></i> Контактная информация
+                    </h6>
+                    <div class="mb-3">
+                        <div style="font-weight:600;font-size:0.85rem;color:var(--text-light);">Email</div>
+                        <div style="font-size:0.95rem;">${escapeHtml(currentUser.email || '—')}</div>
+                    </div>
+                    <div class="mb-3">
+                        <div style="font-weight:600;font-size:0.85rem;color:var(--text-light);">Телефон</div>
+                        <div style="font-size:0.95rem;">${escapeHtml(currentUser.phone || '—')}</div>
+                    </div>
+                    <div class="mb-3">
+                        <div style="font-weight:600;font-size:0.85rem;color:var(--text-light);">Город</div>
+                        <div style="font-size:0.95rem;">${escapeHtml(currentUser.city || 'Не указан')}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.85rem;color:var(--text-light);">О себе</div>
+                        <div style="font-size:0.95rem;">${escapeHtml(currentUser.about || '—')}</div>
+                    </div>
+                </div>
+                
+                <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                    <h6 style="font-weight:600;font-size:0.95rem;margin-bottom:14px;">
+                        <i class="bi bi-tags"></i> Навыки
+                    </h6>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">${skillsHTML}</div>
+                </div>
+                
+                <div class="card border-0 shadow-sm rounded-4 p-3">
+                    <h6 style="font-weight:600;font-size:0.95rem;margin-bottom:14px;">
+                        <i class="bi bi-list-check"></i> Мои записи
+                    </h6>
+                    ${regsHTML}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// РЕДАКТИРОВАНИЕ ПРОФИЛЯ
+// ============================================================
+function fillProfileForm() {
+    if (!isLoggedIn()) {
+        showToast('Войдите, чтобы редактировать профиль', 'warning');
+        setTimeout(() => showPage('login'), 800);
+        return;
+    }
+    document.getElementById('editName').value = currentUser.name || '';
+    document.getElementById('editEmail').value = currentUser.email || '';
+    document.getElementById('editPhone').value = currentUser.phone || '';
+    document.getElementById('editCity').value = currentUser.city || '';
+    document.getElementById('editAbout').value = currentUser.about || '';
+    document.getElementById('editSkills').value = (currentUser.skills || []).join(', ');
+    document.getElementById('editPassword').value = '';
+    document.getElementById('editConfirm').value = '';
+    clearErrors(['fg-editName','fg-editEmail','fg-editPhone','fg-editPassword','fg-editConfirm']);
+}
+
+function saveProfile() {
+    if (!isLoggedIn()) { showToast('Войдите в систему', 'error'); return; }
+    clearErrors(['fg-editName','fg-editEmail','fg-editPhone','fg-editPassword','fg-editConfirm']);
+    
+    const name = document.getElementById('editName').value.trim();
+    const email = document.getElementById('editEmail').value.trim();
+    const phone = document.getElementById('editPhone').value.trim();
+    const city = document.getElementById('editCity').value;
+    const about = document.getElementById('editAbout').value.trim();
+    const skillsStr = document.getElementById('editSkills').value.trim();
+    const password = document.getElementById('editPassword').value;
+    const confirm = document.getElementById('editConfirm').value;
+    
+    let hasError = false;
+    if (!name) { setError('fg-editName'); hasError = true; }
+    if (!email || !email.includes('@')) { setError('fg-editEmail'); hasError = true; }
+    if (!phone) { setError('fg-editPhone'); hasError = true; }
+    if (password) {
+        if (password.length < 8) { setError('fg-editPassword'); hasError = true; }
+        if (password !== confirm) { setError('fg-editConfirm'); hasError = true; }
+    }
+    if (hasError) { showToast('Исправьте ошибки в форме', 'error'); return; }
+    
+    if (email !== currentUser.email && allUsers.some(u => u.email === email)) {
+        setError('fg-editEmail');
+        showToast('Email уже используется', 'error');
+        return;
+    }
+    
+    currentUser.name = name;
+    currentUser.email = email;
+    currentUser.phone = phone;
+    currentUser.city = city;
+    currentUser.about = about;
+    currentUser.skills = skillsStr ? skillsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (password) currentUser.password = password;
+    
+    saveUsers();
+    saveCurrent();
+    showToast('✅ Профиль сохранён!', 'success');
+    renderProfile();
+    setTimeout(() => showPage('profile'), 500);
+}
+
+// ============================================================
+// ВХОД / РЕГИСТРАЦИЯ / ВЫХОД
+// ============================================================
+function doLogin() {
+    clearErrors(['fg-loginEmail','fg-loginPassword']);
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    let hasError = false;
+    if (!email || !email.includes('@')) { setError('fg-loginEmail'); hasError = true; }
+    if (!password) { setError('fg-loginPassword'); hasError = true; }
+    if (hasError) { showToast('Заполните поля корректно', 'error'); return; }
+    
+    const user = allUsers.find(u => u.email === email);
+    if (!user) {
+        showToast('Пользователь с таким email не найден', 'error');
+        setError('fg-loginEmail');
+        return;
+    }
+    if (user.password && user.password !== password) {
+        showToast('Неверный пароль', 'error');
+        setError('fg-loginPassword');
+        return;
+    }
+    
+    currentUser = user;
+    saveCurrent();
+    updateAuthButtons();
+    showToast('✅ Вы вошли!', 'success');
+    setTimeout(() => showPage('profile'), 500);
+}
+
+function doRegister() {
+    clearErrors(['fg-regEmail','fg-regName','fg-regPhone','fg-regPassword','fg-regConfirm']);
+    
+    const email = document.getElementById('regEmail').value.trim();
+    const name = document.getElementById('regName').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const confirm = document.getElementById('regConfirm').value;
+    const skillsStr = document.getElementById('regSkills').value.trim();
+    const consent = document.getElementById('regConsent').checked;
+    
+    let hasError = false;
+    if (!email || !email.includes('@')) { setError('fg-regEmail'); hasError = true; }
+    if (!name) { setError('fg-regName'); hasError = true; }
+    if (!phone) { setError('fg-regPhone'); hasError = true; }
+    if (!password || password.length < 8) { setError('fg-regPassword'); hasError = true; }
+    if (password !== confirm) { setError('fg-regConfirm'); hasError = true; }
+    if (!consent) {
+        document.getElementById('fg-regConsent').querySelector('.error-text').style.display = 'block';
+        hasError = true;
+    } else {
+        document.getElementById('fg-regConsent').querySelector('.error-text').style.display = 'none';
+    }
+    if (hasError) { showToast('Исправьте ошибки в форме', 'error'); return; }
+    
+    if (allUsers.some(u => u.email === email)) {
+        setError('fg-regEmail');
+        showToast('Пользователь с таким email уже существует', 'error');
+        return;
+    }
+    
+    const newUser = {
+        name, email, phone, password,
+        city: '', about: '',
+        skills: skillsStr ? skillsStr.split(',').map(s => s.trim()).filter(Boolean) : [],
+        registrations: [],
+        points: 0,
+        role: currentRole,
+        registeredAt: new Date().toISOString()
+    };
+    
+    allUsers.push(newUser);
+    currentUser = newUser;
+    
+    saveUsers();
+    saveCurrent();
+    updateAuthButtons();
+    showToast('✅ Регистрация успешна! Вы в системе.', 'success');
+    
+    ['regEmail','regName','regPhone','regPassword','regConfirm','regSkills'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('regConsent').checked = false;
+    
+    setTimeout(() => showPage('profile'), 800);
+}
+
+function logout() {
+    currentUser = null;
+    saveCurrent();
+    updateAuthButtons();
+    showToast('Вы вышли из системы', 'info');
+    showPage('home');
+}
+
+function deleteAccount() {
+    if (!isLoggedIn()) return;
+    if (!confirm('Удалить аккаунт? Все данные будут потеряны.')) return;
+    allUsers = allUsers.filter(u => u.email !== currentUser.email);
+    currentUser = null;
+    saveUsers();
+    saveCurrent();
+    updateAuthButtons();
+    showToast('Аккаунт удалён', 'error');
+    setTimeout(() => showPage('home'), 800);
+}
+
+function updateAuthButtons() {
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    if (!loginBtn || !registerBtn) return;
+    if (isLoggedIn()) {
+        loginBtn.style.display = 'none';
+        registerBtn.textContent = 'Выйти';
+        registerBtn.classList.remove('btn-primary');
+        registerBtn.classList.add('btn-outline-secondary');
+        registerBtn.onclick = logout;
+    } else {
+        loginBtn.style.display = '';
+        registerBtn.textContent = 'Регистрация';
+        registerBtn.classList.remove('btn-outline-secondary');
+        registerBtn.classList.add('btn-primary');
+        registerBtn.onclick = () => showPage('register');
+    }
+}
+
+// ============================================================
+// ПРОЧЕЕ
+// ============================================================
+function fillHelp(text) {
+    const input = document.getElementById('quickHelp');
+    if (input) input.value = text;
+}
+function quickHelp() {
+    const text = document.getElementById('quickHelp').value;
+    if (!text.trim()) { showToast('Напишите, какая помощь нужна', 'warning'); return; }
+    showToast('✅ Заявка обработана! Перейдите в "Создать".', 'success');
+}
+function assistantFill() {
+    const text = document.getElementById('assistantInput').value;
+    if (!text.trim()) { showToast('Напишите описание проблемы', 'warning'); return; }
+    const lower = text.toLowerCase();
+    let type = 'other';
+    if (lower.includes('поиск') || lower.includes('пропал') || lower.includes('лес')) type = 'search';
+    else if (lower.includes('ветеран') || lower.includes('бабушк') || lower.includes('дедушк')) type = 'veterans';
+    else if (lower.includes('субботник') || lower.includes('уборк')) type = 'subbotnik';
+    else if (lower.includes('донор') || lower.includes('кровь')) type = 'donation';
+    else if (lower.includes('животн') || lower.includes('собак')) type = 'animals';
+    document.getElementById('createType').value = type;
+    showToast('✅ Автозаполнение выполнено!', 'success');
+}
+function selectRole(element, role) {
+    document.querySelectorAll('.role-option').forEach(r => r.classList.remove('active'));
+    element.classList.add('active');
+    currentRole = role;
+}
+function openModal() {
+    document.getElementById('modalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    const postText = document.getElementById('postText');
+    if (postText && !postText.value) {
+        postText.value = 'Присоединяйтесь к волонтёрскому движению Республики Коми! #Добро11';
+    }
+}
+function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+function publishPost() {
+    const vk = document.getElementById('checkVK').checked;
+    const ok = document.getElementById('checkOK').checked;
+    if (!vk && !ok) { showToast('Выберите соцсеть', 'warning'); return; }
+    closeModal();
+    showToast('✅ Пост опубликован!', 'success');
+}
+
+function createEvent() {
+    clearErrors(['fg-createTitle','fg-createDescription']);
+    const title = document.getElementById('createTitle').value.trim();
+    const description = document.getElementById('createDescription').value.trim();
+    
+    let hasError = false;
+    if (!title) { setError('fg-createTitle'); hasError = true; }
+    if (!description) { setError('fg-createDescription'); hasError = true; }
+    if (hasError) { showToast('Заполните обязательные поля', 'error'); return; }
+    
+    const type = document.getElementById('createType').value;
+    const city = document.getElementById('createCity').value;
+    const dateStart = document.getElementById('createDateStart').value;
+    const dateEnd = document.getElementById('createDateEnd').value;
+    const needed = parseInt(document.getElementById('createNeeded').value) || 10;
+    const skillsStr = document.getElementById('createSkills').value.trim();
+    const phone = document.getElementById('createPhone').value.trim();
+    const email = document.getElementById('createEmail').value.trim();
+    const ageLimit = document.getElementById('createAge').value;
+    
+    const dateObj = dateStart ? new Date(dateStart) : new Date();
+    const dateStr = dateObj.toLocaleDateString('ru-RU');
+    const timeStr = dateObj.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+    const endStr = dateEnd ? new Date(dateEnd).toLocaleDateString('ru-RU') : '';
+    
+    EVENTS.push({
+        id: Date.now(),
+        type, title, city,
+        date: dateStr, time: timeStr,
+        dateEnd: endStr,
+        taken: 0, total: needed,
+        skills: skillsStr ? skillsStr.split(',').map(s => s.trim()).filter(Boolean) : [],
+        urgent: false,
+        description,
+        phone, email,
+        ageLimit,
+        authorEmail: currentUser ? currentUser.email : null
+    });
+    
+    saveEvents();
+    showToast('✅ Мероприятие создано!', 'success');
+    document.getElementById('createTitle').value = '';
+    document.getElementById('createDescription').value = '';
+    document.getElementById('createSkills').value = '';
+    document.getElementById('createPhone').value = '';
+    document.getElementById('createEmail').value = '';
+    document.getElementById('createDateStart').value = '';
+    document.getElementById('createDateEnd').value = '';
+    
+    setTimeout(() => showPage('events'), 800);
+}
+
+// ============================================================
+// КАРТА / КАЛЕНДАРЬ
+// ============================================================
+let mapInstance = null;
+let calendarInstance = null;
+
+function initMap() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
+    try {
+        mapInstance = L.map('map').setView([63.5, 54.0], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap', maxZoom: 18
+        }).addTo(mapInstance);
+        
+        const colors = { search:'#E74C3C', veterans:'#2980B9', subbotnik:'#27AE60', donation:'#F1C40F', animals:'#8E44AD', other:'#E67E22' };
+        const coords = {
+            'Сыктывкар':[61.668,50.836], 'Ухта':[63.556,53.679],
+            'Воркута':[67.497,64.061], 'Печора':[65.148,57.224],
+            'Усинск':[65.999,57.557], 'Инта':[66.040,60.115],
+            'Сосногорск':[63.6,53.9], 'Емва':[62.59,50.85], 'Выльгорт':[61.62,50.76]
+        };
+        EVENTS.forEach(e => {
+            const c = coords[e.city];
+            if (!c) return;
+            const color = colors[e.type] || '#E67E22';
+            L.circleMarker(c, { radius:10, fillColor:color, color:'#fff', weight:2, fillOpacity:0.9 })
+                .addTo(mapInstance)
+                .bindPopup('<b>' + escapeHtml(e.title) + '</b><br>' + escapeHtml(e.city));
+        });
+        setTimeout(() => mapInstance.invalidateSize(), 300);
+    } catch(err) { console.error(err); }
+}
+
+function initCalendar() {
+    const el = document.getElementById('calendar');
+    if (!el) return;
+    try {
+        calendarInstance = new FullCalendar.Calendar(el, {
+            initialView: 'dayGridMonth',
+            headerToolbar: { left:'prev,next', center:'title', right:'today' },
+            events: EVENTS.filter(e => e.date).map(e => {
+                const [d,m,y] = e.date.split('.');
+                if (!d || !m || !y) return null;
+                return { title: e.title, start: y + '-' + m + '-' + d, color: '#27AE60' };
+            }).filter(Boolean),
+            locale: 'ru',
+            height: 'auto'
+        });
+        calendarInstance.render();
+    } catch(err) { console.error(err); }
+}
+
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    loadUsers();
+    loadCurrent();
+    loadEvents();
+    updateAuthButtons();
+    renderHome();
+    renderEvents();
+    
+    const modal = document.getElementById('modalOverlay');
+    if (modal) modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    
+    const qh = document.getElementById('quickHelp');
+    if (qh) qh.addEventListener('keypress', e => { if (e.key === 'Enter') quickHelp(); });
+    
+    const lp = document.getElementById('loginPassword');
+    if (lp) lp.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
